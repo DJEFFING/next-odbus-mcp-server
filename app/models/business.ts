@@ -1,0 +1,34 @@
+export interface Business {
+    idx: string;
+    business_name: string;
+    alt_business_name: string;
+    business_sector: string;
+    business_subsector: string;
+    business_description: string;
+    business_id_no: string;
+    licence_number: string;
+    licence_type: string;
+    derived_NAICS: string;
+    source_NAICS_primary: string;
+    source_NAICS_secondary: string;
+    NAICS_descr: string;
+    NAICS_descr2: string;
+    latitude: string;
+    longitude: string;
+    full_address: string;
+    postal_code: string;
+    unit: string;
+    street_no: string;
+    street_name: string;
+    street_direction: string;
+    street_type: string;
+    city: string;
+    prov_terr: string;
+    total_no_employees: string;
+    status: string;
+    provider: string;
+    geo_source: string;
+    CSDUID: string;
+    CSDNAME: string;
+    PRUID: string;
+}
