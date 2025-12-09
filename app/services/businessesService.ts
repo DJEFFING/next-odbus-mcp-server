@@ -29,20 +29,7 @@ export class BusinessService {
                 const csvPath = path.join(process.cwd(), 'dataSet', 'ODBus_v1.csv');
                 csvText = fs.readFileSync(csvPath, 'utf-8');
             } else {
-
-                // En production : charger depuis URL externe
-                const csvUrl = process.env.CSV_URL;
-                if (!csvUrl) {
-                    throw new Error('CSV_URL non définie dans les variables d\'environnement');
-                }
-
-                const response = await fetch(csvUrl);
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch CSV: ${response.status} ${response.statusText}`);
-                }
-
-                csvText = await response.text();
-                console.log(`✅ CSV téléchargé (${(csvText.length / 1024 / 1024).toFixed(2)} MB) en ${Date.now() - startTime}ms`);
+                csvText = await this.telechargerCsv();
             }
 
             // Parser avec PapaParse - Configuration robuste
@@ -88,6 +75,24 @@ export class BusinessService {
             console.error('❌ Erreur chargement CSV:', error);
             throw new Error(`Impossible de charger le dataset ODBus: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
+    }
+
+
+    async telechargerCsv() {
+        // En production : charger depuis URL externe
+        const startTime = Date.now();
+        const csvUrl = process.env.CSV_URL;
+        if (!csvUrl) {
+            throw new Error('CSV_URL non définie dans les variables d\'environnement');
+        }
+
+        const response = await fetch(csvUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch CSV: ${response.status} ${response.statusText}`);
+        }
+        const csvText = await response.text();
+        console.log(`✅ CSV téléchargé (${(csvText.length / 1024 / 1024).toFixed(2)} MB) en ${Date.now() - startTime}ms`);
+        return csvText
     }
 
 }
