@@ -15,6 +15,8 @@ export async function POST(request: Request) {
         switch (method) {
             case 'initialize':
                 return initialize(body);
+            case 'notifications/initialized':
+                return sendInitializedNotification(body);
             case 'resources/list':
                 return resourcesList(body);
             case 'tools/list':
@@ -41,6 +43,13 @@ export async function POST(request: Request) {
             { status: 500 }
         );
     }
+}
+
+function sendInitializedNotification(body: MCPRequest) {
+    return NextResponse.json({
+        jsonrpc: body.jsonrpc,
+        method: "notifications/initialized"
+    });
 }
 
 function resourcesRead(body: MCPRequest, url: string) {
@@ -89,8 +98,10 @@ const initialize = (body: MCPRequest) => {
                 },
                 "tools": {
                     "listChanged": false
-                }
+                },
+                "tool_invoke": {},
             },
+            
             "serverInfo": {
                 "name": "odbus-mcp-server",
                 "version": "1.0.0"
@@ -461,7 +472,7 @@ function searchBusinesses(body: MCPRequest, businesses: Business[]) {
     });
 }
 
-function getStatistics(body: MCPRequest, businesses: Business[]){
+function getStatistics(body: MCPRequest, businesses: Business[]) {
     // On récupère les arguments envoyés par le client via JSON-RPC
     const args = body.params.arguments;
     const breakdown = args.breakdown_by || 'all';
@@ -475,80 +486,80 @@ function getStatistics(body: MCPRequest, businesses: Business[]){
     if (breakdown === 'province' || breakdown === 'all') {
         const provStats: Record<string, number> = {};
         businesses.forEach(b => {
-          if (b.prov_terr) provStats[b.prov_terr] = (provStats[b.prov_terr] || 0) + 1;
+            if (b.prov_terr) provStats[b.prov_terr] = (provStats[b.prov_terr] || 0) + 1;
         });
         stats.by_province = Object.entries(provStats)
-          .sort((a, b) => b[1] - a[1])
-          .map(([province, count]) => ({ 
-            province, 
-            count, 
-            percentage: ((count / businesses.length) * 100).toFixed(2) + '%' 
-        }));
+            .sort((a, b) => b[1] - a[1])
+            .map(([province, count]) => ({
+                province,
+                count,
+                percentage: ((count / businesses.length) * 100).toFixed(2) + '%'
+            }));
     }
 
     if (breakdown === 'sector' || breakdown === 'all') {
         const sectorStats: Record<string, number> = {};
         businesses.forEach(b => {
-          if (b.business_sector) sectorStats[b.business_sector] = (sectorStats[b.business_sector] || 0) + 1;
+            if (b.business_sector) sectorStats[b.business_sector] = (sectorStats[b.business_sector] || 0) + 1;
         });
         stats.by_sector = Object.entries(sectorStats)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 15)
-        .map(([sector, count]) => ({ sector, count }));
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 15)
+            .map(([sector, count]) => ({ sector, count }));
     }
 
     if (breakdown === 'naics' || breakdown === 'all') {
         const naicsStats: Record<string, number> = {};
         businesses.forEach(b => {
-          const naics = b.derived_NAICS || b.source_NAICS_primary;
-          if (naics) {
-            const sector = naics.substring(0, 2);
-            naicsStats[sector] = (naicsStats[sector] || 0) + 1;
-          }
+            const naics = b.derived_NAICS || b.source_NAICS_primary;
+            if (naics) {
+                const sector = naics.substring(0, 2);
+                naicsStats[sector] = (naicsStats[sector] || 0) + 1;
+            }
         });
         stats.by_naics_sector = Object.entries(naicsStats)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
-        .map(([code, count]) => ({ naics_code: code, count }));
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([code, count]) => ({ naics_code: code, count }));
     }
 
 
     if (breakdown === 'naics' || breakdown === 'all') {
         const naicsStats: Record<string, number> = {};
         businesses.forEach(b => {
-          const naics = b.derived_NAICS || b.source_NAICS_primary;
-          if (naics) {
-            const sector = naics.substring(0, 2);
-            naicsStats[sector] = (naicsStats[sector] || 0) + 1;
-          }
+            const naics = b.derived_NAICS || b.source_NAICS_primary;
+            if (naics) {
+                const sector = naics.substring(0, 2);
+                naicsStats[sector] = (naicsStats[sector] || 0) + 1;
+            }
         });
         stats.by_naics_sector = Object.entries(naicsStats)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
-        .map(([code, count]) => ({ naics_code: code, count }));
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([code, count]) => ({ naics_code: code, count }));
     }
 
     if (breakdown === 'provider' || breakdown === 'all') {
         const providerStats: Record<string, number> = {};
         businesses.forEach(b => {
-          if (b.provider) providerStats[b.provider] = (providerStats[b.provider] || 0) + 1;
+            if (b.provider) providerStats[b.provider] = (providerStats[b.provider] || 0) + 1;
         });
         stats.by_provider = Object.entries(providerStats)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
-        .map(([provider, count]) => ({ provider, count }));
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([provider, count]) => ({ provider, count }));
     }
 
     return NextResponse.json({
         "jsonrpc": "2.0",
         "id": body.id,
         "result": {
-          "content": [
-            {
-              "type": "text",
-              "text": JSON.stringify(stats, null, 2)
-            }
-          ]
+            "content": [
+                {
+                    "type": "text",
+                    "text": JSON.stringify(stats, null, 2)
+                }
+            ]
         }
     });
 
@@ -591,13 +602,13 @@ function filterByProvince(body: MCPRequest, businesses: Business[]) {
 
     provBusinesses.forEach(b => {
         if (b.business_sector) provSectors[b.business_sector] = (provSectors[b.business_sector] || 0) + 1;
-        
+
         const naics = b.derived_NAICS || b.source_NAICS_primary;
         if (naics) {
             const sector = naics.substring(0, 2);
             naicsCounts[sector] = (naicsCounts[sector] || 0) + 1;
         }
-        
+
         if (b.status) statusCounts[b.status] = (statusCounts[b.status] || 0) + 1;
         if (b.city) cityCounts[b.city] = (cityCounts[b.city] || 0) + 1;
     });
