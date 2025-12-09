@@ -231,16 +231,3 @@ ou simplement demander :
 # 📩 **Contact**
 
 Pour toute question ou remarque, n’hésitez pas à me contacter via le dépôt GitHub du projet.
-
----
-
-# 🎉 Fin du README
-
-Si tu veux, je peux aussi :
-
-* l'adapter avec badges GitHub
-* ajouter une section Installation locale
-* créer un README bilingue EN/FR
-* générer un logo / bannière pour le projet
-
-Souhaites-tu une version améliorée ou stylée Markdown ?
